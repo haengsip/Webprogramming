@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시크릿 데스크</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav>
+        <div class="nav-group">
+            <strong>🎮 게임</strong>
+            <button onclick="loadContent('tetris')">테트리스</button>
+            <button onclick="loadContent('minesweeper')">지뢰찾기</button>
+        </div>
+        <div class="nav-group">
+            <strong>🏅 스포츠</strong>
+            <button onclick="loadContent('soccer')">축구(결과)</button>
+            <button onclick="loadContent('baseball')">야구(결과)</button>
+        </div>
+        <div class="nav-group">
+            <strong>📺 유튜브 쇼츠</strong>
+            <button onclick="loadContent('shorts')">쇼츠 보기</button>
+        </div>
+    </nav>
+
+    <div class="content-area">
+        <iframe id="contentFrame" src="about:blank" frameborder="0" allowfullscreen></iframe>
+    </div>
+
+    <div id="hourglassTimer">
+        ⏳ --:--
+    </div>
+
+
+    <script>
+        // --- 1. 콘텐츠 로드 로직 ---
+        const iframe = document.getElementById('contentFrame');
+        
+        // 콘텐츠 URL 목록 (프로토타입용 예시)
+        const contentSources = {
+            'tetris': 'https://htmltetris.com/', // 테트리스 예시
+            'minesweeper': 'https://minesweeperonline.com/', // 지뢰찾기 예시
+            'soccer': 'https://m.sports.naver.com/wfootball/index', // 네이버 스포츠 축구
+            'baseball': 'https://m.sports.naver.com/kbaseball/index', // 네이버 스포츠 야구
+            'shorts': 'https://www.youtube.com/embed/shorts/O-6f5wQXpE0' // 유튜브 쇼츠 예시
+        };
+
+        function loadContent(type) {
+            if (contentSources[type]) {
+                iframe.src = contentSources[type];
+            }
+        }
+        
+        // 페이지 로드 시 기본 콘텐츠 (예: 테트리스)
+        window.onload = () => {
+            loadContent('tetris');
+        };
+
+
+        // --- 2. 모래시계 타이머 로직 ---
+        const timerDisplay = document.getElementById('hourglassTimer');
+        const endTime = localStorage.getItem('secretDeskEndTime');
+
+        if (!endTime) {
+            timerDisplay.textContent = '⏳ 시간 미설정';
+        } else {
+            // 종료 시간 설정
+            const [endHour, endMinute] = endTime.split(':');
+            const endDate = new Date();
+            endDate.setHours(endHour, endMinute, 0, 0);
+
+            // 1초마다 타이머 업데이트
+            const timerInterval = setInterval(() => {
+                const now = new Date();
+                const diff = endDate.getTime() - now.getTime(); // 남은 시간 (ms)
+
+                if (diff <= 0) {
+                    // 시간이 다 됐을 때
+                    clearInterval(timerInterval);
+                    timerDisplay.textContent = '🎉 수업 끝!';
+                    timerDisplay.style.background = '#4CAF50'; // 초록색
+                    return;
+                }
+
+                // 남은 시간(분, 초) 계산
+                const totalSeconds = Math.floor(diff / 1000);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                
+                // 0초일 때 00으로 보이게 포맷팅
+                const displaySeconds = seconds < 10 ? '0' + seconds : seconds;
+                
+                timerDisplay.textContent = `⏳ ${minutes}:${displaySeconds}`;
+
+                // 5분 미만일 때 색 변경 (강조)
+                if (minutes < 5) {
+                    timerDisplay.style.background = '#FFC107'; // 노란색
+                }
+
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
